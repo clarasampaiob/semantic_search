@@ -72,12 +72,13 @@ $azureData = [
 // Chamada a API
 $azureRes = $master->fetchApi($azureApi, $azureData, "POST", $azureKey, "api-key:");
 
-foreach ($azureRes['value'] as $item) {
-        $arrays[] =  $item['content'] . "<br>";
-    }
-
-
-
+// Guarda todos os score e content recebidos
+$allResults = array_map(function($item) {
+  return [
+    'score' => $item['@search.score'],
+    'content' => $item['content']
+  ];
+}, $azureRes['value']);
 
 // Filtra apenas itens com N1
 $itemsN1 = array_filter($azureRes['value'], function($item) {
@@ -89,9 +90,10 @@ $contentN1 = array_map(function($item) {
     return $item['content'];
 }, $itemsN1);
 
+// Contexto enviado ao GPT
 $context = "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $contentN1);
 
-
+// Dados que serão enviados ao Chat GPT
 $gptData = [
   "model" => "gpt-4o",
   "messages" => [
@@ -106,16 +108,34 @@ $gptData = [
   ]
 ];
 
+// Chamada a API
 $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
 
 // Retorno ao usuário
+// $response = [
+//     'retrieved' => $allResults,
+//     // 'contentN1' => $itemsN1,
+//     // 'gpt' => $gptRes,
+//     // 'reply' => $gptRes['choices'][0]['message']['content'],
+//     // 'azure' => $azureRes,
+//     // 'embeding' => $embedding
+// ];
+
+
+
 $response = [
-    // 'filter' => $contentN1,
-    // 'contentN1' => $itemsN1,
-    'gpt' => $gptRes,
-    'reply' => $gptRes['choices'][0]['message']['content'],
-    // 'azure' => $azureRes,
-    // 'embeding' => $embedding
+  "messages" => [
+    [
+      "role" => "USER",
+      "content" => $prompt
+    ],
+    [
+      "role" => "AGENT",
+      "content" => $gptRes['choices'][0]['message']['content']
+    ]
+  ],
+  "handoverToHumanNeeded" => false,
+  "sectionsRetrieved" => $allResults
 ];
 
 
