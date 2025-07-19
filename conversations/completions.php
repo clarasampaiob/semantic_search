@@ -2,8 +2,12 @@
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+session_start();
+$_SESSION['humanAgent'] = true;
+$_SESSION['clarify'] = 0;
 require_once "master.php";
 $master = new Master();
+
 
 // Verifica se a requisição é POST / Erro: Método não permitido (405)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -39,7 +43,6 @@ if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || 
 // Separa os dados vindos do chat em role (user) e mensagem enviada (content)
 $message = end($input['messages']);
 $prompt = $message['content'];
-$role = $message['role'];
 
 // Dados que serão enviados a API da Openai
 $openaiData = [
@@ -80,18 +83,21 @@ $allResults = array_map(function($item) {
   ];
 }, $azureRes['value']);
 
+// Gerar contexto para Chat GPT
+$context = $master->generateContext("handover", $azureRes['value']);
+
 // Filtra apenas itens com N1
-$itemsN1 = array_filter($azureRes['value'], function($item) {
-    return ($item['type'] ?? null) === 'N1';
-});
+// $itemsN1 = array_filter($azureRes['value'], function($item) {
+//     return ($item['type'] ?? null) === 'N1';
+// });
 
-// Cria array apenas com o conteúdo de content
-$contentN1 = array_map(function($item) {
-    return $item['content'];
-}, $itemsN1);
+// // Cria array apenas com o conteúdo de content
+// $contentN1 = array_map(function($item) {
+//     return $item['content'];
+// }, $itemsN1);
 
-// Contexto enviado ao GPT
-$context = "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $contentN1);
+// // Contexto enviado ao GPT
+// $context = "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $contentN1);
 
 // Dados que serão enviados ao Chat GPT
 $gptData = [
@@ -111,32 +117,37 @@ $gptData = [
 // Chamada a API
 $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
 
+// Verifica se precisa de agente humano no atendimento
+$_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content']);
+
+
+
 // Retorno ao usuário
-// $response = [
-//     'retrieved' => $allResults,
-//     // 'contentN1' => $itemsN1,
-//     // 'gpt' => $gptRes,
-//     // 'reply' => $gptRes['choices'][0]['message']['content'],
-//     // 'azure' => $azureRes,
-//     // 'embeding' => $embedding
-// ];
-
-
-
 $response = [
-  "messages" => [
-    [
-      "role" => "USER",
-      "content" => $prompt
-    ],
-    [
-      "role" => "AGENT",
-      "content" => $gptRes['choices'][0]['message']['content']
-    ]
-  ],
-  "handoverToHumanNeeded" => false,
-  "sectionsRetrieved" => $allResults
+    'session' => $_SESSION['humanAgent'],
+    'contentN1' => $context,
+    // 'gpt' => $gptRes,
+    // 'reply' => $gptRes['choices'][0]['message']['content'],
+    'azure' => $azureRes,
+    // 'embeding' => $azureRes['value']
 ];
+
+
+
+// $response = [
+//   "messages" => [
+//     [
+//       "role" => "USER",
+//       "content" => $prompt
+//     ],
+//     [
+//       "role" => "AGENT",
+//       "content" => $gptRes['choices'][0]['message']['content']
+//     ]
+//   ],
+//   "handoverToHumanNeeded" => $_SESSION['humanAgent'],
+//   "sectionsRetrieved" => $allResults
+// ];
 
 
 echo json_encode($response);

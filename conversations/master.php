@@ -2,6 +2,31 @@
 
 class Master {
 
+    public function askToClarify($gptResponse){
+        if($gptResponse === "Could you please clarify your question? I need a bit more detail to help you better."){
+            $_SESSION['clarify'] = (int)($_SESSION['clarify'] ?? 0) + 1;
+        }
+        return $_SESSION['clarify'] > 2;
+    }
+
+    public function generateContext($model, $apiRes){
+        // Cria array apenas com o conteúdo de content
+        $content = array_map(function($item) {
+            return $item['content'];
+        }, $apiRes);
+        if($model === "clarification"){
+            // Contexto enviado ao GPT
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $content);
+        }elseif($model === "handover"){
+            $itemsN2 = array_filter($apiRes, function($item) {
+                return ($item['type'] ?? null) === 'N2';
+            });
+            $_SESSION['humanAgent'] = !empty($itemsN2);
+            $teste = ($_SESSION['humanAgent']) ? "true" : "false";
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. Sometimes the user will need a human assistent for clarification. I will say true if that is the case and false if it is not. So, here is the case: " . $teste . ". If the case is true, you can give your answer and add this sentence in the end: \"I'm transferring you to a specialized agent for further assistance. They will be with you shortly.\"\n\nContext:\n" . implode("\n- ", $content);
+        }
+    }
+
     public function fetchApi($api, $content, $method, $token = null, $authType = null, $json = true){
         $headers = [];
         $ch = curl_init($api);
