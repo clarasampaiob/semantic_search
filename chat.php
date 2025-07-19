@@ -185,8 +185,8 @@
                 loadingMessageElement.remove();
             }
             
-            
-            addMessage(data.reply, 'bot');
+            addMessage(data.messages[1].content, 'bot');
+            // addMessage(data.reply, 'bot');
             
         } catch (error) {
             // Remove a mensagem de carregamento se existir
