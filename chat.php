@@ -161,7 +161,7 @@
             loadingMessageElement = addMessage('Processando sua pergunta...', 'bot');
             
             
-            const response = await fetch('conversations/completions.php', {
+            const response = await fetch('conversations/completions', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json',},
                 body: JSON.stringify({
