@@ -19,6 +19,7 @@ try {
   $azureKey = $_ENV['AZURE_API_KEY'];
   $openaiApi = $_ENV['OPENAI_API_URL'];
   $azureApi = $_ENV['AZURE_API_URL'];
+  $openaiChat = $_ENV['OPENAI_API_CHAT'];
 } catch (RuntimeException $e) {
   http_response_code(500);
   echo json_encode(['error' => $e->getMessage()]);
@@ -37,13 +38,13 @@ if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || 
 
 // Separa os dados vindos do chat em role (user) e mensagem enviada (content)
 $message = end($input['messages']);
-$content = $message['content'];
+$prompt = $message['content'];
 $role = $message['role'];
 
 // Dados que serão enviados a API da Openai
 $openaiData = [
   'model' => 'text-embedding-3-large',
-  'input' => $content
+  'input' => $prompt
 ];
 
 // Chamada a API
@@ -71,10 +72,50 @@ $azureData = [
 // Chamada a API
 $azureRes = $master->fetchApi($azureApi, $azureData, "POST", $azureKey, "api-key:");
 
+foreach ($azureRes['value'] as $item) {
+        $arrays[] =  $item['content'] . "<br>";
+    }
+
+
+
+
+// Filtra apenas itens com N1
+$itemsN1 = array_filter($azureRes['value'], function($item) {
+    return ($item['type'] ?? null) === 'N1';
+});
+
+// Cria array apenas com o conteúdo de content
+$contentN1 = array_map(function($item) {
+    return $item['content'];
+}, $itemsN1);
+
+$context = "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $contentN1);
+
+
+$gptData = [
+  "model" => "gpt-4o",
+  "messages" => [
+    [
+      "role" => "system",
+      "content" => $context
+    ],
+    [
+      "role" => "user",
+      "content" => $prompt
+    ]
+  ]
+];
+
+$gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
+
 // Retorno ao usuário
 $response = [
-    'azure' => $azureRes,
-    'embeding' => $embedding
+    // 'filter' => $contentN1,
+    // 'contentN1' => $itemsN1,
+    'gpt' => $gptRes,
+    'reply' => $gptRes['choices'][0]['message']['content'],
+    // 'azure' => $azureRes,
+    // 'embeding' => $embedding
 ];
 
 
