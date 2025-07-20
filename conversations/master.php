@@ -8,10 +8,12 @@ class Master {
             if (file_exists($filePath)) {
                 $fileData = json_decode(file_get_contents($filePath), true);
                 $increment = (int) $fileData['increment'] + 1;
+                $expirationDate = $fileData['expiration_date'];
             } else {
                 $increment = 1;
+                $expirationDate = date('Y-m-d H:i:s', strtotime('+1 minute')); 
             }
-            file_put_contents($filePath, json_encode(['increment' => $increment]));
+            file_put_contents($filePath, json_encode(['increment' => $increment, 'expiration_date' => $expirationDate]));
             return $increment > 2;
         }
         return false;
@@ -81,7 +83,12 @@ class Master {
             // Lista todos os arquivos da pasta
             $files = glob($folder . '/*'); 
             foreach ($files as $file) {
-                if (is_file($file) && basename($file) !== ($helpdeskId . '.json')) unlink($file);
+                if (is_file($file) && basename($file) !== ($helpdeskId . '.json')){
+                    $fileData = json_decode(file_get_contents($file), true);
+                    $expirationTime = strtotime($fileData['expiration_date']);
+                    $currentTime = time();
+                    if ($currentTime > $expirationTime) unlink($file);
+                } 
             }
         }
     }
