@@ -130,39 +130,44 @@ $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authoriz
 $filePath = $folder . '/' . $input['helpdeskId'] . '.json';
 
 // Verifica se precisa de agente humano no atendimento
- if($model === "clarification") $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
+ if($model === "clarification"){
+  $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
+  if($_SESSION['humanAgent']) $gptRes['choices'][0]['message']['content'] = "I'm transferring you to a specialized agent for further assistance. They will be with you shortly.";
+}
+
+ 
 
 //  $teste = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
 
 
 
 // Retorno ao usuário
-$response = [
-    'session' => $_SESSION['humanAgent'],
-    'teste' => $teste,
-    'contentN1' => $context,
-    // 'gpt' => $gptRes,
-    'reply' => $gptRes['choices'][0]['message']['content'],
-    'azure' => $azureRes,
-    // 'embeding' => $azureRes['value']
-];
-
-
-
 // $response = [
-//   "messages" => [
-//     [
-//       "role" => "USER",
-//       "content" => $prompt
-//     ],
-//     [
-//       "role" => "AGENT",
-//       "content" => $gptRes['choices'][0]['message']['content']
-//     ]
-//   ],
-//   "handoverToHumanNeeded" => $_SESSION['humanAgent'],
-//   "sectionsRetrieved" => $allResults
+//     'session' => $_SESSION['humanAgent'],
+//     'teste' => $teste,
+//     'contentN1' => $context,
+//     // 'gpt' => $gptRes,
+//     'reply' => $gptRes['choices'][0]['message']['content'],
+//     'azure' => $azureRes,
+//     // 'embeding' => $azureRes['value']
 // ];
+
+
+
+$response = [
+  "messages" => [
+    [
+      "role" => "USER",
+      "content" => $prompt
+    ],
+    [
+      "role" => "AGENT",
+      "content" => $gptRes['choices'][0]['message']['content']
+    ]
+  ],
+  "handoverToHumanNeeded" => $_SESSION['humanAgent'],
+  "sectionsRetrieved" => $allResults
+];
 
 
 echo json_encode($response);

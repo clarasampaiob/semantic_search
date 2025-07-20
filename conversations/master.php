@@ -23,7 +23,6 @@ class Master {
             return $item['content'];
         }, $apiRes);
         if($model === "clarification"){
-            // Contexto enviado ao GPT
             return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $content);
         }elseif($model === "handover"){
             $itemsN2 = array_filter($apiRes, function($item) {
