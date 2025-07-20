@@ -2,11 +2,19 @@
 
 class Master {
 
-    public function askToClarify($gptResponse){
-        if($gptResponse === "Could you please clarify your question? I need a bit more detail to help you better."){
-            $_SESSION['clarify'] = (int)($_SESSION['clarify'] ?? 0) + 1;
+    public function askToClarify($gptResponse, $phrase, $folder, $helpdeskId){
+        $filePath = $folder . '/' . $helpdeskId . '.json';
+        if($gptResponse === $phrase){ 
+            if (file_exists($filePath)) {
+                $fileData = json_decode(file_get_contents($filePath), true);
+                $increment = (int) $fileData['increment'] + 1;
+            } else {
+                $increment = 1;
+            }
+            file_put_contents($filePath, json_encode(['increment' => $increment]));
+            return $increment > 2;
         }
-        return $_SESSION['clarify'] > 2;
+        return false; 
     }
 
     public function generateContext($model, $apiRes){
@@ -62,6 +70,19 @@ class Master {
                 }
                 $_ENV[$key] = $value;
                 putenv("$key=$value");
+            }
+        }
+    }
+
+    public function clearFolder($folder, $helpdeskId){
+        if (!is_dir($folder)) {
+            // Cria a pasta se não existir
+            mkdir($folder, 0755, true);
+        } else {
+            // Lista todos os arquivos da pasta
+            $files = glob($folder . '/*'); 
+            foreach ($files as $file) {
+                if (is_file($file) && basename($file) !== ($helpdeskId . '.json')) unlink($file);
             }
         }
     }

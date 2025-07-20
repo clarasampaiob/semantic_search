@@ -3,11 +3,12 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
-$_SESSION['humanAgent'] = true;
-$_SESSION['clarify'] = 0;
+$_SESSION['humanAgent'] = false;
 require_once "master.php";
 $master = new Master();
-
+$folder = 'logs';
+$model = "clarification"; // "handover"
+$phrase = "Could you please clarify your question? I need a bit more detail to help you better.";
 
 // Verifica se a requisição é POST / Erro: Método não permitido (405)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -39,6 +40,14 @@ if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || 
   echo json_encode(['error' => 'Invalid Request Body']);
   exit;
 }
+
+
+// Limpa arquivos que registraram o número de pedidos de esclarecimentos feitos pelo GPT de conversas com outros helpDeskIds
+$master->clearFolder($folder, $input['helpdeskId']);
+
+
+
+
 
 // Separa os dados vindos do chat em role (user) e mensagem enviada (content)
 $message = end($input['messages']);
@@ -84,7 +93,7 @@ $allResults = array_map(function($item) {
 }, $azureRes['value']);
 
 // Gerar contexto para Chat GPT
-$context = $master->generateContext("handover", $azureRes['value']);
+$context = $master->generateContext($model, $azureRes['value']);
 
 // Filtra apenas itens com N1
 // $itemsN1 = array_filter($azureRes['value'], function($item) {
@@ -117,17 +126,23 @@ $gptData = [
 // Chamada a API
 $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
 
+// Caminho para armazenar arquivos de esclarecimento
+$filePath = $folder . '/' . $input['helpdeskId'] . '.json';
+
 // Verifica se precisa de agente humano no atendimento
-$_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content']);
+ if($model === "clarification") $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
+
+//  $teste = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
 
 
 
 // Retorno ao usuário
 $response = [
     'session' => $_SESSION['humanAgent'],
+    'teste' => $teste,
     'contentN1' => $context,
     // 'gpt' => $gptRes,
-    // 'reply' => $gptRes['choices'][0]['message']['content'],
+    'reply' => $gptRes['choices'][0]['message']['content'],
     'azure' => $azureRes,
     // 'embeding' => $azureRes['value']
 ];
