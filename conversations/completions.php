@@ -7,7 +7,8 @@ $_SESSION['humanAgent'] = false;
 require_once "master.php";
 $master = new Master();
 $folder = 'logs';
-$model = "clarification"; // "handover"
+// $model = "clarification"; 
+$model = "handover";
 $phrase = "Could you please clarify your question? I need a bit more detail to help you better.";
 
 // Verifica se a requisição é POST / Erro: Método não permitido (405)
@@ -95,6 +96,7 @@ $allResults = array_map(function($item) {
 // Gerar contexto para Chat GPT
 $context = $master->generateContext($model, $azureRes['value']);
 
+
 // Filtra apenas itens com N1
 // $itemsN1 = array_filter($azureRes['value'], function($item) {
 //     return ($item['type'] ?? null) === 'N1';
@@ -137,37 +139,35 @@ $filePath = $folder . '/' . $input['helpdeskId'] . '.json';
 
  
 
-//  $teste = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
-
 
 
 // Retorno ao usuário
-// $response = [
-//     'session' => $_SESSION['humanAgent'],
-//     'teste' => $teste,
-//     'contentN1' => $context,
-//     // 'gpt' => $gptRes,
-//     'reply' => $gptRes['choices'][0]['message']['content'],
-//     'azure' => $azureRes,
-//     // 'embeding' => $azureRes['value']
-// ];
-
-
-
 $response = [
-  "messages" => [
-    [
-      "role" => "USER",
-      "content" => $prompt
-    ],
-    [
-      "role" => "AGENT",
-      "content" => $gptRes['choices'][0]['message']['content']
-    ]
-  ],
-  "handoverToHumanNeeded" => $_SESSION['humanAgent'],
-  "sectionsRetrieved" => $allResults
+    'humanAgent' => $_SESSION['humanAgent'],
+    // 'teste' => $teste,
+    'contentN1' => $context,
+    // 'gpt' => $gptRes,
+    'reply' => $gptRes['choices'][0]['message']['content'],
+    'azure' => $azureRes,
+    // 'embeding' => $azureRes['value']
 ];
+
+
+
+// $response = [
+//   "messages" => [
+//     [
+//       "role" => "USER",
+//       "content" => $prompt
+//     ],
+//     [
+//       "role" => "AGENT",
+//       "content" => $gptRes['choices'][0]['message']['content']
+//     ]
+//   ],
+//   "handoverToHumanNeeded" => $_SESSION['humanAgent'],
+//   "sectionsRetrieved" => $allResults
+// ];
 
 
 echo json_encode($response);

@@ -14,7 +14,7 @@ class Master {
             file_put_contents($filePath, json_encode(['increment' => $increment]));
             return $increment > 2;
         }
-        return false; 
+        return false;
     }
 
     public function generateContext($model, $apiRes){
@@ -25,12 +25,12 @@ class Master {
         if($model === "clarification"){
             return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $content);
         }elseif($model === "handover"){
+            // Verifica se tem conteudo N2
             $itemsN2 = array_filter($apiRes, function($item) {
                 return ($item['type'] ?? null) === 'N2';
             });
             $_SESSION['humanAgent'] = !empty($itemsN2);
-            $teste = ($_SESSION['humanAgent']) ? "true" : "false";
-            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. Sometimes the user will need a human assistent for clarification. I will say true if that is the case and false if it is not. So, here is the case: " . $teste . ". If the case is true, you can give your answer and add this sentence in the end: \"I'm transferring you to a specialized agent for further assistance. They will be with you shortly.\"\n\nContext:\n" . implode("\n- ", $content);
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the question is unclear, if the subject requires human or any specialized assistance (when it includes forwarding or redirecting to someone), if you are uncertain about the answer THEN respond ONLY with this exact phrase: \"I'm transferring you to a specialized agent for further assistance. They will be with you shortly.\"\n\nContext:\n" . implode("\n- ", $content);
         }
     }
 
