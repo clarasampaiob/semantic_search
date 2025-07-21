@@ -3,13 +3,10 @@ header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
-$_SESSION['humanAgent'] = false;
+require_once "../config.php";
 require_once "master.php";
-$master = new Master();
-$folder = 'logs';
-// $model = "clarification"; 
-$model = "handover";
-$phrase = "Could you please clarify your question? I need a bit more detail to help you better.";
+$master = new Master($phrase, $transferPhrase, $folder);
+
 
 // Verifica se a requisição é POST / Erro: Método não permitido (405)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -43,8 +40,22 @@ if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || 
 }
 
 
+$horaAtualStr = date('H:i:s');
+$horaAgendadaStr = '16:05:00';
+function horaParaSegundos($horaStr) {
+    list($h, $m, $s) = explode(':', $horaStr);
+    return ($h * 3600) + ($m * 60) + $s;
+}
+$timeNow = horaParaSegundos($horaAtualStr);
+$scheduledTime = horaParaSegundos($horaAgendadaStr);
+
 // Limpa arquivos que registraram o número de pedidos de esclarecimentos feitos pelo GPT de conversas com outros helpDeskIds
-$master->clearFolder($folder, $input['helpdeskId']);
+if (!$setScheduler || ($setScheduler && $scheduledTime < $timeNow)) $master->clearFolder($input['helpdeskId']);
+// if(!$setScheduler){
+//   $master->clearFolder($input['helpdeskId']);
+// }elseif($setScheduler && 10 > 2){
+//   $master->clearFolder($input['helpdeskId']);
+// }
 
 
 
@@ -75,7 +86,7 @@ $azureData = [
   'vectorQueries' => [
     (object)[
       'vector' => $embedding,
-      'k' => 10,
+      'k' => $amount,
       'fields' => 'embeddings',
       'kind' => 'vector'
     ]
@@ -129,12 +140,12 @@ $gptData = [
 $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
 
 // Caminho para armazenar arquivos de esclarecimento
-$filePath = $folder . '/' . $input['helpdeskId'] . '.json';
+// $filePath = $folder . '/' . $input['helpdeskId'] . '.json';
 
 // Verifica se precisa de agente humano no atendimento
  if($model === "clarification"){
-  $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $phrase, $folder, $input['helpdeskId']);
-  if($_SESSION['humanAgent']) $gptRes['choices'][0]['message']['content'] = "I'm transferring you to a specialized agent for further assistance. They will be with you shortly.";
+  $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $input['helpdeskId'], $fileDuration);
+  if($_SESSION['humanAgent']) $gptRes['choices'][0]['message']['content'] = $transferPhrase;
 }
 
  

@@ -1,17 +1,26 @@
 <?php
 
 class Master {
+    private $clarifyPhrase;
+    private $transferPhrase;
+    private $folder;
 
-    public function askToClarify($gptResponse, $phrase, $folder, $helpdeskId){
-        $filePath = $folder . '/' . $helpdeskId . '.json';
-        if($gptResponse === $phrase){ 
+    public function __construct($clarify, $transfer, $folder) {
+        $this->clarifyPhrase = $clarify;
+        $this->transferPhrase = $transfer;
+        $this->folder = $folder; 
+    }
+
+    public function askToClarify($gptResponse, $helpdeskId, $duration){
+        $filePath = $this->folder . '/' . $helpdeskId . '.json';
+        if($gptResponse === $this->clarifyPhrase){ 
             if (file_exists($filePath)) {
                 $fileData = json_decode(file_get_contents($filePath), true);
                 $increment = (int) $fileData['increment'] + 1;
                 $expirationDate = $fileData['expiration_date'];
             } else {
                 $increment = 1;
-                $expirationDate = date('Y-m-d H:i:s', strtotime('+1 minute')); 
+                $expirationDate = date('Y-m-d H:i:s', strtotime($duration)); 
             }
             file_put_contents($filePath, json_encode(['increment' => $increment, 'expiration_date' => $expirationDate]));
             return $increment > 2;
@@ -25,14 +34,14 @@ class Master {
             return $item['content'];
         }, $apiRes);
         if($model === "clarification"){
-            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $content);
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"" . $this->clarifyPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
         }elseif($model === "handover"){
             // Verifica se tem conteudo N2
             $itemsN2 = array_filter($apiRes, function($item) {
                 return ($item['type'] ?? null) === 'N2';
             });
             $_SESSION['humanAgent'] = !empty($itemsN2);
-            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the question is unclear, if the subject requires human or any specialized assistance (when it includes forwarding or redirecting to someone), if you are uncertain about the answer THEN respond ONLY with this exact phrase: \"I'm transferring you to a specialized agent for further assistance. They will be with you shortly.\"\n\nContext:\n" . implode("\n- ", $content);
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the question is unclear, if the subject requires human or any specialized assistance (when it includes forwarding or redirecting to someone), if you are uncertain about the answer THEN respond ONLY with this exact phrase: \"" . $this->transferPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
         }
     }
 
@@ -75,13 +84,13 @@ class Master {
         }
     }
 
-    public function clearFolder($folder, $helpdeskId){
-        if (!is_dir($folder)) {
+    public function clearFolder($helpdeskId){
+        if (!is_dir($this->folder)) {
             // Cria a pasta se não existir
-            mkdir($folder, 0755, true);
+            mkdir($this->folder, 0755, true);
         } else {
             // Lista todos os arquivos da pasta
-            $files = glob($folder . '/*'); 
+            $files = glob($this->folder . '/*'); 
             foreach ($files as $file) {
                 if (is_file($file) && basename($file) !== ($helpdeskId . '.json')){
                     $fileData = json_decode(file_get_contents($file), true);
