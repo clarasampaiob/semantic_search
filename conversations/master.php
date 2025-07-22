@@ -5,10 +5,10 @@ class Master {
     private $transferPhrase;
     private $folder;
 
-    public function __construct($clarify, $transfer, $folder) {
-        $this->clarifyPhrase = $clarify;
-        $this->transferPhrase = $transfer;
-        $this->folder = $folder; 
+    public function __construct(mixed $clarify, mixed $transfer, mixed $folder) {
+        $this->clarifyPhrase = $this->validateType("string", $clarify, "Could you give me more details?");
+        $this->transferPhrase = $this->validateType("string", $transfer, "Wait a minute, someone will talk to you.");
+        $this->folder = $this->validateType("string", $folder, "temps");
     }
 
     public function askToClarify($gptResponse, $helpdeskId, $duration){
@@ -62,9 +62,9 @@ class Master {
         return json_decode($response, true);
     }
 
-    public static function loadEnv(){
+    public function loadEnv(){
         $filePath = "../.env";
-        if (!file_exists($filePath)) return;
+        if (!file_exists($filePath)) throw new RuntimeException("env file not found");
         $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
             if (str_starts_with(trim($line), '#')) continue; // Ignora linhas comentadas
@@ -78,6 +78,8 @@ class Master {
                     $value = substr($value, 1, -1); // Remove aspas duplas
                     $value = str_replace(['\\"', '\\\'', '\\\\'], ['"', "'", '\\'], $value); // lida com caracteres escape
                 }
+                $value = $this->validateType("string", $value, false);
+                if ($value === false) throw new RuntimeException("env files can not contain empty values");
                 $_ENV[$key] = $value;
                 putenv("$key=$value");
             }
@@ -86,11 +88,11 @@ class Master {
 
     public function clearFolder($helpdeskId){
         if (!is_dir($this->folder)) {
-            // Cria a pasta se não existir
-            mkdir($this->folder, 0755, true);
+            mkdir($this->folder, 0755, true); // Cria a pasta se não existir
         } else {
-            // Lista todos os arquivos da pasta
-            $files = glob($this->folder . '/*');
+            $files = glob($this->folder . '/*.json'); // Lista todos os arquivos json da pasta
+            $filesString = json_encode($files, JSON_PRETTY_PRINT);
+            throw new RuntimeException("Failed to create directory: {$filesString}");
             foreach ($files as $file) {
                 if (is_file($file) && basename($file) !== ($helpdeskId . '.json')){
                     $fileData = json_decode(file_get_contents($file), true);
@@ -102,10 +104,14 @@ class Master {
         }
     }
 
-    function inSeconds(string $hours) {
+    public function inSeconds(string $hours) {
         if (!preg_match('/^\d{2}:\d{2}:\d{2}$/', $hours)) throw new InvalidArgumentException("Invalid Format");
         list($h, $m, $s) = explode(':', $hours);
         return ($h * 3600) + ($m * 60) + $s;
+    }
+
+    public function validateType(string $expected, mixed $value, mixed $fall){
+        if($expected === "string") return (!is_string($value) || empty(trim($value))) ? $fall : $value;  
     }
 
 }

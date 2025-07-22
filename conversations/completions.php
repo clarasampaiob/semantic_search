@@ -8,6 +8,7 @@ require_once "master.php";
 $master = new Master($phrase, $transferPhrase, $folder);
 
 
+
 // Verifica se a requisição é POST / Erro: Método não permitido (405)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   http_response_code(405);
@@ -17,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Carrega as chaves e URLs das APIs // Erro: Erro no Servidor (500)
 try {
-  Master::loadEnv();
+  $master->loadEnv();
   $openaiKey = $_ENV['OPENAI_API_KEY'];
   $azureKey = $_ENV['AZURE_API_KEY'];
   $openaiApi = $_ENV['OPENAI_API_URL'];
