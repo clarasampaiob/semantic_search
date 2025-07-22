@@ -32,6 +32,12 @@ try {
 // Recebe o conteúdo da requisição
 $input = json_decode(file_get_contents('php://input'), true);
 
+// Verifica se o conteúdo recebido era JSON / Erro: Formato incorreto (400)
+if (json_last_error() !== JSON_ERROR_NONE) {
+  http_response_code(400);
+  exit('Invalid JSON format');
+}
+
 // Verifica se os campos obrigatórios estão inclusos no conteúdo / Erro: Formato incorreto (400)
 if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || !isset($input['messages'])) {
   http_response_code(400);
@@ -40,22 +46,20 @@ if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || 
 }
 
 
-$horaAtualStr = date('H:i:s');
-$horaAgendadaStr = '16:05:00';
-function horaParaSegundos($horaStr) {
-    list($h, $m, $s) = explode(':', $horaStr);
-    return ($h * 3600) + ($m * 60) + $s;
+
+
+if($setScheduler){
+  try {
+      $timeNow = $master->inSeconds(date('H:i:s'));
+      $scheduledTime = $master->inSeconds($targetTime);
+  } catch (Exception $e) {
+      $setScheduler = false;
+  }
 }
-$timeNow = horaParaSegundos($horaAtualStr);
-$scheduledTime = horaParaSegundos($horaAgendadaStr);
 
 // Limpa arquivos que registraram o número de pedidos de esclarecimentos feitos pelo GPT de conversas com outros helpDeskIds
 if (!$setScheduler || ($setScheduler && $scheduledTime < $timeNow)) $master->clearFolder($input['helpdeskId']);
-// if(!$setScheduler){
-//   $master->clearFolder($input['helpdeskId']);
-// }elseif($setScheduler && 10 > 2){
-//   $master->clearFolder($input['helpdeskId']);
-// }
+
 
 
 
@@ -108,18 +112,6 @@ $allResults = array_map(function($item) {
 $context = $master->generateContext($model, $azureRes['value']);
 
 
-// Filtra apenas itens com N1
-// $itemsN1 = array_filter($azureRes['value'], function($item) {
-//     return ($item['type'] ?? null) === 'N1';
-// });
-
-// // Cria array apenas com o conteúdo de content
-// $contentN1 = array_map(function($item) {
-//     return $item['content'];
-// }, $itemsN1);
-
-// // Contexto enviado ao GPT
-// $context = "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"Could you please clarify your question? I need a bit more detail to help you better.\"\n\nContext:\n" . implode("\n- ", $contentN1);
 
 // Dados que serão enviados ao Chat GPT
 $gptData = [
@@ -139,8 +131,7 @@ $gptData = [
 // Chamada a API
 $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
 
-// Caminho para armazenar arquivos de esclarecimento
-// $filePath = $folder . '/' . $input['helpdeskId'] . '.json';
+
 
 // Verifica se precisa de agente humano no atendimento
  if($model === "clarification"){

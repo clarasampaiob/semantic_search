@@ -34,7 +34,7 @@ class Master {
             return $item['content'];
         }, $apiRes);
         if($model === "clarification"){
-            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"" . $this->clarifyPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information context includes forwarding to someone, ignore this part and answer only with the rest of the context. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"" . $this->clarifyPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
         }elseif($model === "handover"){
             // Verifica se tem conteudo N2
             $itemsN2 = array_filter($apiRes, function($item) {
@@ -90,7 +90,7 @@ class Master {
             mkdir($this->folder, 0755, true);
         } else {
             // Lista todos os arquivos da pasta
-            $files = glob($this->folder . '/*'); 
+            $files = glob($this->folder . '/*');
             foreach ($files as $file) {
                 if (is_file($file) && basename($file) !== ($helpdeskId . '.json')){
                     $fileData = json_decode(file_get_contents($file), true);
@@ -100,6 +100,12 @@ class Master {
                 } 
             }
         }
+    }
+
+    function inSeconds(string $hours) {
+        if (!preg_match('/^\d{2}:\d{2}:\d{2}$/', $hours)) throw new InvalidArgumentException("Invalid Format");
+        list($h, $m, $s) = explode(':', $hours);
+        return ($h * 3600) + ($m * 60) + $s;
     }
 
 }

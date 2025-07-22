@@ -1,12 +1,8 @@
 <?php
-// Definições necessárias para definir um horário para limpar a pasta temps (MANTENHA A DATA NO PASSADO)
+// Definir um horário para limpar a pasta temporária
 date_default_timezone_set('America/Sao_Paulo'); // Fuso horário
-$timeNow = strtotime("2000-01-01 " . date('H:i:s')); // Horário no momento
-$scheduledTime = strtotime("2000-01-01 15:45:00"); // Horário agendado
-$setScheduler = true; // Mantenha True se quiser que o agendamento funcione
-
-
-
+$targetTime = '09:40:00'; // Horário agendado
+$setScheduler = true; // true para o agendamento funcionar
 
 // Sessão para controlar a transferência para atendimento humano
 $_SESSION['humanAgent'] = false;
