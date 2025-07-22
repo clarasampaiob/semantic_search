@@ -11,7 +11,7 @@ class Master {
         $this->folder = $this->validateType("string", $folder, "temps");
     }
 
-    public function askToClarify($gptResponse, $helpdeskId, $duration){
+    public function askToClarify(string $gptResponse, string $helpdeskId, string $duration){
         $filePath = $this->folder . '/' . $helpdeskId . '.json';
         if($gptResponse === $this->clarifyPhrase){ 
             if (file_exists($filePath)) {
@@ -28,7 +28,7 @@ class Master {
         return false;
     }
 
-    public function generateContext($model, $apiRes){
+    public function generateContext(string $model, mixed $apiRes){
         // Cria array apenas com o conteúdo de content
         $content = array_map(function($item) {
             return $item['content'];
@@ -45,7 +45,7 @@ class Master {
         }
     }
 
-    public function fetchApi($api, $content, $method, $token = null, $authType = null, $json = true){
+    public function fetchApi(string $api, mixed $content, string $method, mixed $token = null, mixed $authType = null, bool $json = true){
         $headers = [];
         $ch = curl_init($api);
         if ($json) $headers[] = "Content-Type: application/json";
@@ -114,7 +114,8 @@ class Master {
     }
 
     public function validateType(string $expected, mixed $value, mixed $fall){
-        if($expected === "string") return (!is_string($value) || empty(trim($value))) ? $fall : $value;  
+        if ($expected === "string") return (!is_string($value) || empty(trim($value))) ? $fall : $value; 
+        if ($expected === "bool") return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $fall;
     }
 
 }

@@ -8,7 +8,6 @@ require_once "master.php";
 $master = new Master($phrase, $transferPhrase, $folder);
 
 
-
 // Verifica se a requisição é POST / Erro: Método não permitido (405)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   http_response_code(405);
@@ -42,6 +41,19 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 // Verifica se os campos obrigatórios estão inclusos no conteúdo / Erro: Formato incorreto (400)
 if (!$input || !isset($input['helpdeskId']) || !isset($input['projectName']) || !isset($input['messages'])) {
   http_response_code(400);
+  echo json_encode(['error' => 'Request Body Incomplete']);
+  exit;
+}
+
+// Validação do conteúdo recebido
+$message = end($input['messages']);
+$role = $master->validateType("string", $message['role'], false);
+$prompt = $master->validateType("string", $message['content'], false);
+$helpDeskId = $master->validateType("string", $input['helpdeskId'], false);
+
+// Presença de conteúdo inválido / Erro: Formato incorreto (400)
+if ($helpDeskId === false || $prompt === false || $role === false) {
+  http_response_code(400);
   echo json_encode(['error' => 'Invalid Request Body']);
   exit;
 }
@@ -59,7 +71,7 @@ if($setScheduler){
 }
 
 // Limpa arquivos que registraram o número de pedidos de esclarecimentos feitos pelo GPT de conversas com outros helpDeskIds
-if (!$setScheduler || ($setScheduler && $scheduledTime < $timeNow)) $master->clearFolder($input['helpdeskId']);
+if (!$setScheduler || ($setScheduler && $scheduledTime < $timeNow)) $master->clearFolder($helpDeskId);
 
 
 
@@ -67,8 +79,8 @@ if (!$setScheduler || ($setScheduler && $scheduledTime < $timeNow)) $master->cle
 
 
 // Separa os dados vindos do chat em role (user) e mensagem enviada (content)
-$message = end($input['messages']);
-$prompt = $message['content'];
+// $message = end($input['messages']);
+// $prompt = $message['content'];
 
 // Dados que serão enviados a API da Openai
 $openaiData = [
@@ -136,7 +148,7 @@ $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authoriz
 
 // Verifica se precisa de agente humano no atendimento
  if($model === "clarification"){
-  $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $input['helpdeskId'], $fileDuration);
+  $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $helpDeskId, $fileDuration);
   if($_SESSION['humanAgent']) $gptRes['choices'][0]['message']['content'] = $transferPhrase;
 }
 
