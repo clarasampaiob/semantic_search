@@ -16,25 +16,25 @@ A API foi desenvolvida em PHP e não contém nenhum outro framework para backend
 
 A instalação do ambiente e as dependências é feita através do Docker. Uma vez que os arquivos desse repositório estejam baixados, basta instalar com essa linha de comando:
 
-```yml
+```bash
 docker-compose up --build
 ```
 
 Na segunda execução, em caso de não possuir o Docker Desktop instalado, execute essa linha de comando:
 
-```yml
+```bash
 docker-compose up
 ```
 
 Para acessar a API do Postman, use:
 
-```
+```url
 http://localhost:3000/conversations/completions
 ```
 
 Para acessar a API com o frontend do navegador, use:
 
-```
+```url
 http://localhost:3000
 ```
 
