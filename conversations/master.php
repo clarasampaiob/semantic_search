@@ -86,21 +86,24 @@ class Master {
         }
     }
 
-    public function clearFolder($helpdeskId){
-        if (!is_dir($this->folder)) {
-            mkdir($this->folder, 0755, true); // Cria a pasta se não existir
-        } else {
-            $files = glob($this->folder . '/*.json'); // Lista todos os arquivos json da pasta
-            $filesString = json_encode($files, JSON_PRETTY_PRINT);
-            throw new RuntimeException("Failed to create directory: {$filesString}");
-            foreach ($files as $file) {
-                if (is_file($file) && basename($file) !== ($helpdeskId . '.json')){
-                    $fileData = json_decode(file_get_contents($file), true);
-                    $expirationTime = strtotime($fileData['expiration_date']);
-                    $currentTime = time();
-                    if ($currentTime > $expirationTime) unlink($file);
-                } 
-            }
+    public function clearFolder(string $helpdeskId){
+        if (!is_dir($this->folder)) mkdir($this->folder, 0755, true); // Cria a pasta se não existir
+        $files = glob($this->folder . '/*.json'); // Lista todos os arquivos json da pasta
+        foreach ($files as $file) {
+            if (is_file($file) && basename($file) !== ($helpdeskId . '.json')) {
+                $fileData = json_decode(file_get_contents($file), true);
+                if ($fileData !== null && json_last_error() === JSON_ERROR_NONE) {
+                    if (isset($fileData['expiration_date']) && isset($fileData['increment'])) { 
+                        $expirationTime = strtotime($fileData['expiration_date']);
+                        $currentTime = time();
+                        if ($currentTime > $expirationTime) unlink($file);
+                    } else {
+                        unlink($file);
+                    }
+                } else {
+                    unlink($file);
+                }
+            } 
         }
     }
 

@@ -2,7 +2,7 @@
 // Definir um horário para limpar a pasta temporária
 date_default_timezone_set('America/Sao_Paulo'); // Fuso horário
 $targetTime = '09:40:00'; // Horário agendado
-$setScheduler = true; // true para o agendamento funcionar
+$setScheduler = false; // true para o agendamento funcionar
 
 // Sessão para controlar a transferência para atendimento humano
 $_SESSION['humanAgent'] = false;
