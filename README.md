@@ -26,20 +26,19 @@ Na segunda execução, em caso de não possuir o Docker Desktop instalado, execu
 docker-compose up
 ```
 
-Para acessar a API do Postman, use:
+Para acessar a API pelo Postman, use:
 
 ```url
 http://localhost:3000/conversations/completions
 ```
 
-Para acessar a API com o frontend do navegador, use:
+Para acessar a API pelo navegador, use:
 
 ```url
 http://localhost:3000
 ```
 
-
-⚠️ Antes de testar o sistema, leia as configurações abaixo!
+ATENÇÃO: Antes de testar o sistema, leia as configurações abaixo!
 
 
 ## Configurações Básicas
@@ -97,8 +96,7 @@ $answer = "We had a problem. Please, try again later.";
 
 ```
 
-
-⚠️ Se alterar o nome da pasta temporária, não se esqueça de alterar o nome da pasta criada também!
+ATENÇÃO: Se alterar o nome da pasta temporária, não se esqueça de alterar o nome da pasta criada também!
 
 
 ## Funcionamento do modo CLARIFICATION
@@ -107,14 +105,14 @@ Uma vez que nesse modo o GPT só pode pedir esclarecimentos 2 vezes no máximo, 
 
 Por padrão, a função de limpeza da pasta temps será chamada a cada requisição à API. Entretanto, caso esse não seja o fluxo desejado, basta alterar a flag $setScheduler para true. Essa flag é responsável por ativar um agendamento de limpeza da pasta temps, o qual será executado no horário definido em $targetTime.
 
-⚠️ É recomendado que o horário seja definido pelo menos a partir das 23:00 porque o sistema verifica se o horário atual é maior que o horário de agendamento, então, se o agendamento estiver definido para as 14:00, qualquer requisição após esse horário irá executar a limpeza da pasta (no caso só arquivos com cadastro feito a mais de 25 minutos da hora atual).
+É recomendado que o horário seja definido pelo menos a partir das 23:00 porque o sistema verifica se o horário atual é maior que o horário de agendamento, então, se o agendamento estiver definido para as 14:00, qualquer requisição após esse horário irá executar a limpeza da pasta (no caso só arquivos com cadastro feito a mais de 25 minutos da hora atual).
 
 Para conteúdo classificado como N2, o GPT irá responder dentro do contexto fornecido mas não irá redirecionar para atendimento humano. O GPT foi instruído para identificar palavras como "forward" e "redirect" para entender que se trata desse caso.
 
 
 ## Funcionamento do modo HANDOVER
 
-Neste modo, o GPT irá verificar se o conteúdo enviado pelo usuário requer atendimento humano. O GPT foi instruído para realizar esse redirecionamento se o contexto utilizado para responder a pergunta específica do usuário conter palavras chaves como "forward" e "redirect".
+Neste modo, o GPT irá verificar se o conteúdo enviado pelo usuário requer atendimento humano. O GPT foi instruído para realizar esse redirecionamento se o contexto utilizado para responder a pergunta específica do usuário conter palavras chaves como "forward" ou "redirect".
 
 
 
