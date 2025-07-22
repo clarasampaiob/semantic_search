@@ -101,14 +101,19 @@ ATENÇÃO: Se alterar o nome da pasta temporária, não se esqueça de alterar o
 
 ## Funcionamento do modo CLARIFICATION
 
-Uma vez que nesse modo o GPT só pode pedir esclarecimentos 2 vezes no máximo, a contagem de vezes em que isso ocorre é incrementada em um arquivo .json que é salvo com o ID do help desk na pasta temps. Nesse arquivo também consta a data e horário em que o pedido de esclarecimento foi realizado com intuito de gerenciar o prazo que esse arquivo deve permanecer no servidor. Levando em consideração que um atendimento de help desk não costuma ser muito prolongado, por padrão, o prazo para esses arquivos temporários serem excluídos é de 25 minutos (podendo ser alterado em config.php).
+Uma vez que nesse modo o GPT só pode pedir esclarecimentos 2 vezes no máximo, a contagem de vezes em que isso ocorre é incrementada em um arquivo .json que é salvo com o ID do help desk na pasta temps. Nesse arquivo também consta a data e horário em que o pedido de esclarecimento foi realizado com intuito de gerenciar o prazo que esse arquivo deve permanecer no servidor. Levando em consideração que um atendimento de help desk não costuma ser muito prolongado, por padrão, o prazo para esses arquivos temporários serem excluídos é de 30 minutos (podendo ser alterado em config.php).
 
 Por padrão, a função de limpeza da pasta temps será chamada a cada requisição à API. Entretanto, caso esse não seja o fluxo desejado, basta alterar a flag $setScheduler para true. Essa flag é responsável por ativar um agendamento de limpeza da pasta temps, o qual será executado no horário definido em $targetTime.
 
-É recomendado que o horário seja definido pelo menos a partir das 23:00 porque o sistema verifica se o horário atual é maior que o horário de agendamento, então, se o agendamento estiver definido para as 14:00, qualquer requisição após esse horário irá executar a limpeza da pasta (no caso só arquivos com cadastro feito a mais de 25 minutos da hora atual).
+É recomendado que o horário seja definido pelo menos a partir das 23:00 porque o sistema verifica se o horário atual é maior que o horário de agendamento, então, se o agendamento estiver definido para as 14:00, qualquer requisição após esse horário irá executar a limpeza da pasta (no caso só arquivos com cadastro feito a mais de 30 minutos da hora atual).
 
 Para conteúdo classificado como N2, o GPT irá responder dentro do contexto fornecido mas não irá redirecionar para atendimento humano. O GPT foi instruído para identificar palavras como "forward" e "redirect" para entender que se trata desse caso.
 
+Exemplo de um arquivo temporário:
+
+```json
+{"increment":1,"expiration_date":"2025-07-22 15:35:57"}
+```
 
 ## Funcionamento do modo HANDOVER
 
