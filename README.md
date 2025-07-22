@@ -28,13 +28,13 @@ docker-compose up
 
 Para acessar a API do Postman, use:
 
-```http
+```
 http://localhost:3000/conversations/completions
 ```
 
 Para acessar a API com o frontend do navegador, use:
 
-```http
+```
 http://localhost:3000
 ```
 
@@ -43,7 +43,7 @@ http://localhost:3000
 
 ## Configurações Básicas
 
-Antes de testar o projeto, é necessário criar um arquivo .env na raíz do projeto com as chaves e as URLs das APIs. O arquivo deve conter o seguinte conteúdo:
+É necessário criar um arquivo .env na raíz do projeto com as chaves e as URLs das APIs. O arquivo deve conter o seguinte conteúdo:
 
 ```
 OPENAI_API_KEY = "sua-chave"
@@ -58,24 +58,42 @@ Na pasta conversations crie uma pasta chamada temps. Essa pasta servirá para ar
 
 ## Configurações Personalizáveis
 
-Na raiz do projeto, use o arquivo config.php para alterar algumas configurações, tais como
+Na raiz do projeto, use o arquivo config.php para alterar algumas configurações. O código abaixo contém uma breve explicação de cada parâmetro.
 
-![image](https://github.com/user-attachments/assets/6b2a826c-6630-4424-b08c-e295d6232770)
+```php
+// Fuso Horário
+date_default_timezone_set('America/Sao_Paulo');
 
-### Sample Request
+// @type string - Horário para executar a limpeza de pasta
+$targetTime = '09:40:00';
 
-```http
-POST /conversations/completions
-{
-    "helpdeskId": 123456,
-    "projectName": "tesla_motors",
-    "messages": [
-        {
-            "role": "USER",
-            "content": "Hello! How long does a Tesla battery last before it needs to be replaced?"
-        }
-    ]
-}
+// @type bool - Use true para ativar o agendamento
+$setScheduler = false;
+
+// @type bool - Sessão para controlar a transferência para atendimento humano
+$_SESSION['humanAgent'] = false;
+
+// @type string - Nome da pasta para arquivos temporários
+$folder = 'temps';
+
+// @type string - Tempo de duração dos arquivos temporários
+$fileDuration = '+2 minutes';
+
+// @type string - Modelo para as respostas da IA - Opções: "clarification" ou "handover"
+$model = "clarification";
+
+// @type int - Numero de frases para trazer da azure API e contextualizar o GPT
+$amount = 10;
+
+// @type string - Frase que o GPT vai usar para pedir esclarecimento
+$phrase = "Could you please clarify your question? I need a bit more detail to help you better.";
+
+// @type string - Frase que o GPT vai usar quando trocar para atendimento humano
+$transferPhrase = "I'm transferring you to a specialized agent for further assistance. They will be with you shortly.";
+
+// @type string - Frase exibida pro usuário final
+$answer = "We had a problem. Please, try again later.";
+
 ```
 
 ### Sample Response
