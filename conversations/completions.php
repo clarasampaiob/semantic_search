@@ -7,15 +7,7 @@ require_once "../config.php";
 require_once "master.php";
 $master = new Master($phrase, $transferPhrase, $folder);
 
-
-// Verifica se a requisição é POST / Erro: Método não permitido (405)
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-  http_response_code(405);
-  echo json_encode(['error' => 'Method Not Allowed']);
-  exit;
-}
-
-// Carrega as chaves e URLs das APIs // Erro: Erro no Servidor (500)
+// Carrega as chaves e URLs das APIs / Erro: Erro no Servidor (500)
 try {
   $master->loadEnv();
   $openaiKey = $_ENV['OPENAI_API_KEY'];
@@ -29,13 +21,21 @@ try {
   exit;
 }
 
+// Verifica se a requisição é POST / Erro: Método não permitido (405)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+  http_response_code(405);
+  echo json_encode(['error' => 'Method Not Allowed']);
+  exit;
+}
+
 // Recebe o conteúdo da requisição
 $input = json_decode(file_get_contents('php://input'), true);
 
-// Verifica se o conteúdo recebido era JSON / Erro: Formato incorreto (400)
+// Verifica se o conteúdo recebido é JSON / Erro: Formato incorreto (400)
 if (json_last_error() !== JSON_ERROR_NONE) {
   http_response_code(400);
-  exit('Invalid JSON format');
+  echo json_encode(['error' => 'Invalid JSON format']);
+  exit;
 }
 
 // Verifica se os campos obrigatórios estão inclusos no conteúdo / Erro: Formato incorreto (400)
@@ -58,9 +58,7 @@ if ($helpDeskId === false || $prompt === false || $role === false) {
   exit;
 }
 
-
-
-
+// Verifica se o agendamento está ativo e se os dados são válidos
 if($setScheduler){
   try {
       $timeNow = $master->inSeconds(date('H:i:s'));
@@ -73,15 +71,6 @@ if($setScheduler){
 // Limpa arquivos que registraram o número de pedidos de esclarecimentos feitos pelo GPT de conversas com outros helpDeskIds
 if (!$setScheduler || ($setScheduler && $scheduledTime < $timeNow)) $master->clearFolder($helpDeskId);
 
-
-
-
-
-
-// Separa os dados vindos do chat em role (user) e mensagem enviada (content)
-// $message = end($input['messages']);
-// $prompt = $message['content'];
-
 // Dados que serão enviados a API da Openai
 $openaiData = [
   'model' => 'text-embedding-3-large',
@@ -90,6 +79,13 @@ $openaiData = [
 
 // Chamada a API
 $openaiRes = $master->fetchApi($openaiApi, $openaiData, "POST", $openaiKey, "Authorization: Bearer");
+
+// Verifica se não foi possível retornar o dado esperado / Erro: Erro no Servidor (500)
+if (!isset($openaiRes['data'][0]['embedding'])) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Request to Openai API Failed']);
+  exit;
+}
 
 // Armazena o resultado do RAG (Retrieval Augmented Generation)
 $embedding = $openaiRes['data'][0]['embedding'];
@@ -113,6 +109,13 @@ $azureData = [
 // Chamada a API
 $azureRes = $master->fetchApi($azureApi, $azureData, "POST", $azureKey, "api-key:");
 
+// Verifica se não foi possível retornar o dado esperado / Erro: Erro no Servidor (500)
+if (!isset($azureRes['value'])) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Request to Azure API Failed']);
+  exit;
+}
+
 // Guarda todos os score e content recebidos
 $allResults = array_map(function($item) {
   return [
@@ -123,8 +126,6 @@ $allResults = array_map(function($item) {
 
 // Gerar contexto para Chat GPT
 $context = $master->generateContext($model, $azureRes['value']);
-
-
 
 // Dados que serão enviados ao Chat GPT
 $gptData = [
@@ -144,45 +145,36 @@ $gptData = [
 // Chamada a API
 $gptRes = $master->fetchApi($openaiChat, $gptData, "POST", $openaiKey, "Authorization: Bearer");
 
+// Verifica se não foi possível retornar o dado esperado / Erro: Erro no Servidor (500)
+if (!isset($gptRes['choices'][0]['message']['content'])) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Request to GPT API Failed']);
+  exit;
+}
 
+// Atualiza a resposta para o usuário
+$answer = $gptRes['choices'][0]['message']['content'];
 
 // Verifica se precisa de agente humano no atendimento
  if($model === "clarification"){
   $_SESSION['humanAgent'] = $master->askToClarify($gptRes['choices'][0]['message']['content'], $helpDeskId, $fileDuration);
-  if($_SESSION['humanAgent']) $gptRes['choices'][0]['message']['content'] = $transferPhrase;
+  if($_SESSION['humanAgent']) $answer = $transferPhrase;
 }
 
- 
-
-
-
-// Retorno ao usuário
+// Resposta para o usuário
 $response = [
-    'humanAgent' => $_SESSION['humanAgent'],
-    // 'teste' => $teste,
-    'contentN1' => $context,
-    // 'gpt' => $gptRes,
-    'reply' => $gptRes['choices'][0]['message']['content'],
-    'azure' => $azureRes,
-    // 'embeding' => $azureRes['value']
+  "messages" => [
+    [
+      "role" => "USER",
+      "content" => $prompt
+    ],
+    [
+      "role" => "AGENT",
+      "content" => $answer
+    ]
+  ],
+  "handoverToHumanNeeded" => $_SESSION['humanAgent'],
+  "sectionsRetrieved" => $allResults
 ];
-
-
-
-// $response = [
-//   "messages" => [
-//     [
-//       "role" => "USER",
-//       "content" => $prompt
-//     ],
-//     [
-//       "role" => "AGENT",
-//       "content" => $gptRes['choices'][0]['message']['content']
-//     ]
-//   ],
-//   "handoverToHumanNeeded" => $_SESSION['humanAgent'],
-//   "sectionsRetrieved" => $allResults
-// ];
-
 
 echo json_encode($response);

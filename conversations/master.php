@@ -1,9 +1,9 @@
 <?php
 
 class Master {
-    private $clarifyPhrase;
-    private $transferPhrase;
-    private $folder;
+    private string $clarifyPhrase;
+    private string $transferPhrase;
+    private string $folder;
 
     public function __construct(mixed $clarify, mixed $transfer, mixed $folder) {
         $this->clarifyPhrase = $this->validateType("string", $clarify, "Could you give me more details?");
@@ -16,11 +16,15 @@ class Master {
         if($gptResponse === $this->clarifyPhrase){ 
             if (file_exists($filePath)) {
                 $fileData = json_decode(file_get_contents($filePath), true);
-                $increment = (int) $fileData['increment'] + 1;
-                $expirationDate = $fileData['expiration_date'];
+                if ($fileData !== null && json_last_error() === JSON_ERROR_NONE) {
+                    if (isset($fileData['expiration_date']) && isset($fileData['increment'])) { 
+                        $increment = (int) $fileData['increment'] + 1;
+                        $expirationDate = $fileData['expiration_date'];
+                    }
+                }
             } else {
                 $increment = 1;
-                $expirationDate = date('Y-m-d H:i:s', strtotime($duration)); 
+                $expirationDate = date('Y-m-d H:i:s', strtotime($duration));
             }
             file_put_contents($filePath, json_encode(['increment' => $increment, 'expiration_date' => $expirationDate]));
             return $increment > 2;
@@ -93,7 +97,7 @@ class Master {
             if (is_file($file) && basename($file) !== ($helpdeskId . '.json')) {
                 $fileData = json_decode(file_get_contents($file), true);
                 if ($fileData !== null && json_last_error() === JSON_ERROR_NONE) {
-                    if (isset($fileData['expiration_date']) && isset($fileData['increment'])) { 
+                    if (isset($fileData['expiration_date']) && isset($fileData['increment'])) {
                         $expirationTime = strtotime($fileData['expiration_date']);
                         $currentTime = time();
                         if ($currentTime > $expirationTime) unlink($file);
@@ -103,7 +107,7 @@ class Master {
                 } else {
                     unlink($file);
                 }
-            } 
+            }
         }
     }
 
@@ -114,8 +118,7 @@ class Master {
     }
 
     public function validateType(string $expected, mixed $value, mixed $fall){
-        if ($expected === "string") return (!is_string($value) || empty(trim($value))) ? $fall : $value; 
-        if ($expected === "bool") return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $fall;
+        if ($expected === "string") return (!is_string($value) || empty(trim($value))) ? $fall : $value;
     }
 
 }

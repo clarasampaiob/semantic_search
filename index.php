@@ -1,16 +1,4 @@
-<?php
-date_default_timezone_set('America/Sao_Paulo');
-$hora_atual_completa = date('H:i:s');
-$hora_atual = date('H'); // Pega a hora atual (00 a 23)
-$hora_desejada = strtotime("1970-01-01 15:30:00");
-$horario = strtotime("1970-01-01 $hora_atual_completa");
-// echo $hora_desejada;
-// echo $horario;
-$timeNow = strtotime("2000-01-01 " . date('H:i:s')); // Horário no momento
-$scheduledTime = strtotime("2000-01-01 15:30:00");
-echo $scheduledTime > $timeNow;
 
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -171,7 +159,7 @@ echo $scheduledTime > $timeNow;
             
         try {
             
-            loadingMessageElement = addMessage('Processando sua pergunta...', 'bot');
+            loadingMessageElement = addMessage('Thinking ...', 'bot');
             
             
             const response = await fetch('conversations/completions', {
@@ -188,7 +176,7 @@ echo $scheduledTime > $timeNow;
             });
 
             if (!response.ok) {
-                throw new Error(`Erro no servidor: ${response.status}`);
+                throw new Error("We had a problem. Please, try again later.");
             }
 
             const data = await response.json();
@@ -208,7 +196,7 @@ echo $scheduledTime > $timeNow;
             }
             
             // Adiciona mensagem de erro
-            addMessage(`Erro: ${error.message}`, 'bot');
+            addMessage(`${error.message}`, 'bot');
             console.error('Erro na requisição:', error);
         }
     }
