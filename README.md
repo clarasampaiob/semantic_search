@@ -45,7 +45,7 @@ http://localhost:3000
 
 É necessário criar um arquivo .env na raíz do projeto com as chaves e as URLs das APIs. O arquivo deve conter o seguinte conteúdo:
 
-```
+```env
 OPENAI_API_KEY = "sua-chave"
 AZURE_API_KEY = "sua-chave"
 OPENAI_API_URL = "url-open-ai"
