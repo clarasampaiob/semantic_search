@@ -14,7 +14,7 @@ $setScheduler = false;
 $_SESSION['humanAgent'] = false;
 
 // @type string - Nome da pasta para arquivos temporários
-$folder = 'teste';
+$folder = 'temps';
 
 // @type string - Tempo de duração dos arquivos temporários
 $fileDuration = '+2 minutes';
