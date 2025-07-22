@@ -16,13 +16,13 @@ A API foi desenvolvida em PHP e não contém nenhum outro framework para backend
 
 A instalação do ambiente e as dependências é feita através do Docker. Uma vez que os arquivos desse repositório estejam baixados, basta instalar com essa linha de comando:
 
-```bash
+```yml
 docker-compose up --build
 ```
 
 Na segunda execução, em caso de não possuir o Docker Desktop instalado, execute essa linha de comando:
 
-```bash
+```yml
 docker-compose up
 ```
 
@@ -65,7 +65,7 @@ Na raiz do projeto, use o arquivo config.php para alterar algumas configuraçõe
 date_default_timezone_set('America/Sao_Paulo');
 
 // @type string - Horário para executar a limpeza de pasta
-$targetTime = '09:40:00';
+$targetTime = '23:40:00';
 
 // @type bool - Use true para ativar o agendamento
 $setScheduler = false;
@@ -77,7 +77,7 @@ $_SESSION['humanAgent'] = false;
 $folder = 'temps';
 
 // @type string - Tempo de duração dos arquivos temporários
-$fileDuration = '+2 minutes';
+$fileDuration = '+30 minutes';
 
 // @type string - Modelo para as respostas da IA - Opções: "clarification" ou "handover"
 $model = "clarification";
@@ -96,30 +96,25 @@ $answer = "We had a problem. Please, try again later.";
 
 ```
 
-### Sample Response
+⚠️ ATENÇÃO: Se alterar o nome da pasta temporária, não se esqueça de alterar o nome da pasta criada também!
 
-```http
-{
-    "messages": [
-        {
-            "role": "USER",
-            "content": "Hello! How long does a Tesla battery last before it needs to be replaced?"
-        },
-        {
-            "role": "AGENT",
-            "content": "Hello! How can I assist you today? I'm Claudia, your Tesla support assistant 😊\nTesla batteries are designed to last many years; the vehicle will notify you if maintenance is needed! Let me know if you have more questions! 🚗⚡"
-        }
-    ],
-    "handoverToHumanNeeded": false,
-    "sectionsRetrieved": [
-        { "score": 0.6085123, "content": "How do I know if my Tesla battery needs replacement? Tesla batteries are designed to last many years; the vehicle will notify you if maintenance is needed." },
-        { "score": 0.5785547, "content": "What is Tesla's battery warranty? Tesla’s battery warranty typically lasts for 8 years or about 150,000 miles, depending on the model." },
-        ...
-    ]    
-}
-```
 
-*Feel free to adjust the field names and formatting (snake_case, camelCase, etc.) to suit your preference—no tricks here! Our goal is to make it as straightforward as possible for you, regardless of the language or framework you choose.*
+## Funcionamento do modo CLARIFICATION
+
+Uma vez que nesse modo o GPT só pode pedir esclarecimentos 2 vezes no máximo, a contagem de vezes em que isso ocorre é incrementada em um arquivo .json que é salvo com o ID do help desk na pasta temps. Nesse arquivo também consta a data e horário em que o pedido de esclarecimento foi realizado com intuito de gerenciar o prazo que esse arquivo deve permanecer no servidor. Levando em consideração que um atendimento de help desk não costuma ser muito prolongado, por padrão, o prazo para esses arquivos temporários serem excluídos é de 25 minutos (podendo ser alterado em config.php).
+
+Por padrão, a função de limpeza da pasta temps será chamada a cada requisição à API. Entretanto, caso esse não seja o fluxo desejado, basta alterar a flag $setScheduler para true. Essa flag é responsável por ativar um agendamento de limpeza da pasta temps, o qual será executado no horário definido em $targetTime.
+
+⚠️ ATENÇÃO: É recomendado que o horário seja definido pelo menos a partir das 23:00 porque o sistema verifica se o horário atual é maior que o horário de agendamento, então, se o agendamento estiver definido para as 14:00, qualquer requisição após esse horário irá executar a limpeza da pasta (no caso só arquivos com cadastro feito a mais de 25 minutos da hora atual).
+
+Para conteúdo classificado como N2, o GPT irá responder dentro do contexto fornecido mas não irá redirecionar para atendimento humano. O GPT foi instruído para identificar palavras como "forward" e "redirect" para entender que se trata desse caso.
+
+
+## Funcionamento do modo HANDOVER
+
+Neste modo, o GPT irá verificar se o conteúdo enviado pelo usuário requer atendimento humano. O GPT foi instruído para realizar esse redirecionamento se o contexto utilizado para responder a pergunta específica do usuário conter palavras chaves como "forward" e "redirect".
+
+
 
 
 ### What You'll Need to Do
