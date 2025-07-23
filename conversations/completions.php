@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 session_start();
 require_once "../config.php";
 require_once "master.php";
-$master = new Master($phrase, $transferPhrase, $folder);
+$master = new Master();
 
 // Verifica se os dados fornecidos em config.php possuem o tipo correto
 $v[] = $master->validateType("string", $targetTime, 'invalid');
@@ -25,6 +25,9 @@ if (in_array('invalid', $v, true)) {
   echo json_encode(['error' => 'Invalid config content']);
   exit;
 }
+
+// Definindo os atributos após validação
+$master->setAttributes($phrase, $transferPhrase, $folder);
 
 // Carrega as chaves e URLs das APIs / Erro: Erro no Servidor (500)
 try {

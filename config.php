@@ -20,11 +20,11 @@ $fileDuration = '+30 minutes';
 $folder = 'temps';
 
 // @type string - Modelo para as respostas da IA - Opções: "clarification" ou "handover"
-$model = "clarification";
-// $model = "handover";
+// $model = "clarification";
+$model = "handover";
 
 // @type int - Numero de frases para trazer da azure API e contextualizar o GPT
-$amount = 3;
+$amount = 10;
 
 // @type string - Frase que o GPT vai usar para pedir esclarecimento
 $phrase = "Could you please clarify your question? I need a bit more detail to help you better.";

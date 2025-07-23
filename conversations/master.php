@@ -5,15 +5,15 @@ class Master {
     private string $transferPhrase;
     private string $folder;
 
-    public function __construct(mixed $clarify, mixed $transfer, mixed $folder) {
-        $this->clarifyPhrase = $this->validateType("string", $clarify, "Could you give me more details?");
-        $this->transferPhrase = $this->validateType("string", $transfer, "Wait a minute, someone will talk to you.");
-        $this->folder = $this->validateType("string", $folder, "temps");
+    public function setAttributes(string $clarify, string $transfer, string $folder) {
+        $this->clarifyPhrase = $clarify;
+        $this->transferPhrase = $transfer;
+        $this->folder = $folder;
     }
 
     public function askToClarify(string $gptResponse, string $helpdeskId, string $duration){
         $filePath = $this->folder . '/' . $helpdeskId . '.json';
-        if($gptResponse === $this->clarifyPhrase){ 
+        if($gptResponse === $this->clarifyPhrase){
             if (file_exists($filePath)) {
                 $fileData = json_decode(file_get_contents($filePath), true);
                 if ($fileData !== null && json_last_error() === JSON_ERROR_NONE) {
@@ -38,14 +38,14 @@ class Master {
             return $item['content'];
         }, $apiRes);
         if($model === "clarification"){
-            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the information context includes forwarding to someone, ignore this part and answer only with the rest of the context. If the information is not available in the context or If you are unsure, ask for clarification using this sentence: \"" . $this->clarifyPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the user makes a general question about a topic that is included in the context, use the given context to respond with a short general idea about it, the user will ask more if needed (but do not force them to). And again, use only the provided context, do not add any extra information. If the information context includes forwarding to someone, ignore this part and answer only with the rest of the context, the user will ask more only if they want, so do not force it. If the information is not available in the context or If you are unsure, ask for clarification using ONLY this sentence to respond: \"" . $this->clarifyPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
         }elseif($model === "handover"){
             // Verifica se tem conteudo N2
             $itemsN2 = array_filter($apiRes, function($item) {
                 return ($item['type'] ?? null) === 'N2';
             });
             $_SESSION['humanAgent'] = !empty($itemsN2);
-            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the question is unclear, if the subject requires human or any specialized assistance (when it includes forwarding or redirecting to someone), if you are uncertain about the answer THEN respond ONLY with this exact phrase: \"" . $this->transferPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
+            return "You are a Tesla support agent. You must answer strictly based on the provided context only. Do not use any external knowledge or perform any external search. If the user asks generally about a topic that is included in the context, use the given context to respond it shortly but ignore content that includes forwarding or redirectiong to someone. If the question is unclear, if the subject requires human or any specialized assistance (when it includes forwarding or redirecting to someone), if you are uncertain about the answer THEN respond ONLY with this exact phrase: \"" . $this->transferPhrase . "\"\n\nContext:\n" . implode("\n- ", $content);
         }
     }
 
