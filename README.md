@@ -1,6 +1,6 @@
 ## Objetivo
 
-Esse script contém uma API que retorna respostas de chatbot baseada em um conteúdo específico de uma determinada empresa. A ideia é que o usuário faça perguntas relacionadas à empresa e estas sejam respondidas pela inteligência artificial, no caso o GPT, que deve usar apenas o contexto fornecido pela empresa. Existem 2 modos disponíveis para o fluxo de respostas, que são o clarification e o handover.
+Esse é um projeto de uma API que retorna respostas de chatbot baseada em um conteúdo específico de uma determinada empresa. A ideia é que o usuário faça perguntas relacionadas à empresa e estas sejam respondidas pela inteligência artificial, no caso o GPT, que deve usar apenas o contexto fornecido pela empresa. Existem 2 modos disponíveis para o fluxo de respostas, que são o clarification e o handover.
 
 No modo clarification, o GPT deve direcionar o usuário para o atendimento humano caso ele tenha pedido esclarecimentos ao usuário mais de 2 vezes. No modo handover, isso acontecerá se a pergunta do usuário estiver relacionada ao contexto classificado como N2, o qual exige que um agente especializado responda ao invés do GPT.
 
