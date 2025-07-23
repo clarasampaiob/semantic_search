@@ -422,8 +422,8 @@ $azureData = [
   'filter' => "projectName eq 'tesla_motors'",
   'vectorQueries' => [
     (object)[
-      'vector' => $embedding,
-      'k' => $amount,
+      'vector' => $embedding, // Recebido da API
+      'k' => $amount, // Quantidade de respostas desejadas
       'fields' => 'embeddings',
       'kind' => 'vector'
     ]
@@ -439,11 +439,11 @@ $gptData = [
   "messages" => [
     [
       "role" => "system",
-      "content" => $context
+      "content" => $context // Instruções para o GPT
     ],
     [
       "role" => "user",
-      "content" => $prompt
+      "content" => $prompt // Mensagem do usuário
     ]
   ]
 ];

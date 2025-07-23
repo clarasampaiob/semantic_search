@@ -14,7 +14,7 @@ $setScheduler = false;
 $targetTime = '23:40:00';
 
 // @type string - Tempo de duração dos arquivos temporários
-$fileDuration = '+3 minutes';
+$fileDuration = '+30 minutes';
 
 // @type string - Nome da pasta para arquivos temporários
 $folder = 'temps';
