@@ -118,7 +118,7 @@ Exemplo de um arquivo temporário:
 Neste modo, o GPT irá verificar se o conteúdo enviado pelo usuário requer atendimento humano. O GPT foi instruído para realizar esse redirecionamento se o contexto utilizado para responder a pergunta específica do usuário conter palavras chaves como "forward" ou "redirect".
 
 
-## Testes Unitários
+## Testes
 
 Iremos utilizar a empresa TESLA como mock de exemplo. Para receber uma resposta presente nos contextos fornecidos, use essa entrada no Postman. Caso esteja utilizando a página web, basta apenas digitar na caixa de texto a mesma pergunta.
 
