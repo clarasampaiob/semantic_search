@@ -320,6 +320,27 @@ Resultado modo clarification:
 
 OBSERVAÇÃO: Para testar a transferência para atendimento humano no modo clarification, mantenha o mesmo "helpdeskId". Os testes acima tiveram os IDs diferentes para mostrar os resultados diretos ignorando o incremento nos arquivos .json
 
+Para testar o agendamento para o modo clarification, basta ir em config.php e alterar as flags abaixo:
+
+```php 
+$targetTime = '10:04:00'; // Coloque um horário próximo ao horário atual
+$setScheduler = true; // Deve ser true para funcionar
+$fileDuration = '+2 minutes'; // Coloque uma duração curta para os arquivos serem removidos logo
+```
+OBSERVAÇÃO: O arquivo com o helpdeskID do qual você está fazendo a requisição não será excluído até que outro helpdeskId seja utilizado. Essa é uma medida de segurança para o caso em que o usuário ainda esteja na conversa com o GPT e a contagem de dúvidas ainda precise ser rastreada. Por esse motivo também, foi recomendado colocar a validade dos arquivos para 30 minutos, uma vez que podemos ter muitos helpdeskIds em contato com o Chat ao mesmo tempo.
+
+## Restrições
+
+A execução do código da API será interrompida nos seguintes casos:
+* Se não houver arquivo .env
+* Se o conteúdo de .env estiver incorreto 
+* Se a requisição não for POST
+* Se o conteúdo recebido não for JSON
+* Se o JSON não contiver os dados helpdeskId, projectName e messages
+* Se o conteúdo do JSON não for uma string
+* Se a requisição à qualquer API externa falhar
+
+
 ## Mapeamento de Código
 
 A classe Master conta com os seguintes métodos:

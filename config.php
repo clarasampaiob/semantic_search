@@ -5,10 +5,10 @@
 date_default_timezone_set('America/Sao_Paulo');
 
 // @type string - Horário para executar a limpeza de pasta
-$targetTime = '09:40:00';
+$targetTime = '10:04:00';
 
 // @type bool - Use true para ativar o agendamento
-$setScheduler = false;
+$setScheduler = true;
 
 // @type bool - Sessão para controlar a transferência para atendimento humano
 $_SESSION['humanAgent'] = false;
@@ -24,7 +24,7 @@ $model = "clarification";
 // $model = "handover";
 
 // @type int - Numero de frases para trazer da azure API e contextualizar o GPT
-$amount = 13;
+$amount = 3;
 
 // @type string - Frase que o GPT vai usar para pedir esclarecimento
 $phrase = "Could you please clarify your question? I need a bit more detail to help you better.";
