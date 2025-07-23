@@ -43,7 +43,7 @@ ATENÇÃO: Antes de testar o sistema, leia as configurações abaixo!
 
 ## Configurações Básicas
 
-É necessário criar um arquivo .env na raíz do projeto com as chaves e as URLs das APIs. O arquivo deve conter o seguinte conteúdo:
+É necessário criar um arquivo .env na raíz do projeto com as chaves e as URLs das APIs. O arquivo deve conter o seguinte conteúdo e deve ser organizado dessa forma:
 
 ```env
 OPENAI_API_KEY = "substitua-pela-sua-chave"
