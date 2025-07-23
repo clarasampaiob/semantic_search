@@ -14,7 +14,7 @@ A API foi desenvolvida em PHP e não contém nenhum outro framework para backend
 
 ## Instalação
 
-A instalação do ambiente e as dependências é feita através do Docker. Uma vez que os arquivos desse repositório estejam baixados, basta instalar com essa linha de comando:
+A instalação do ambiente e as dependências é feita através do Docker. Se houver algum problema com a versão, descomente a linha "version" em docker-compose.yml. Uma vez que os arquivos desse repositório estejam baixados, basta instalar com essa linha de comando:
 
 ```bash
 docker-compose up --build
