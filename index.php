@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .chat-container {
-            max-width: 800px;
+            max-width: 850px;
             height: 100vh;
             margin: 0 auto;
             display: flex;
@@ -21,16 +21,15 @@
             overflow-y: auto;
             padding: 15px;
             margin-bottom: 15px;
-            border: 1px solid #dee2e6;
+            border: 1px solid transparent;
             border-radius: 8px;
-            background-color: #f8f9fa;
+            background-color: transparent;
         }
         
         .input-area {
             padding: 15px;
-            background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px gray;
         }
         
         .suggestion-buttons {
@@ -46,6 +45,11 @@
         .input-group {
             margin-top: 5px;
         }
+
+        #userInput{
+            background-color: #404045;
+            color: white;
+        }
         
         .message-bubble {
             padding: 10px 15px;
@@ -56,15 +60,17 @@
         }
         
         .user-message {
-            background-color: #d1e7dd;
+            background-color: #72d0e7ff;
             align-self: flex-end;
             margin-left: auto;
+            color: black;
         }
         
         .bot-message {
             background-color: #e2e3e5;
             align-self: flex-start;
             margin-right: auto;
+            color: black;
         }
     </style>
 </head>
