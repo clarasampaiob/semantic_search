@@ -69,6 +69,7 @@ class Master {
     public function loadEnv(){
         $filePath = "../.env";
         if (!file_exists($filePath)) throw new RuntimeException("env file not found");
+        $allowedKeys = ['OPENAI_API_KEY','AZURE_API_KEY','OPENAI_API_URL','AZURE_API_URL','OPENAI_API_CHAT'];
         $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
             if (str_starts_with(trim($line), '#')) continue; // Ignora linhas comentadas
@@ -76,6 +77,7 @@ class Master {
             if (count($parts) === 2) {
                 $key = trim($parts[0]);
                 $value = trim($parts[1]);
+                if (!in_array($key, $allowedKeys, true)) throw new RuntimeException("Invalid key found in env file");
                 if (str_starts_with($value, "'") && str_ends_with($value, "'")) {
                     $value = substr($value, 1, -1); // Remove aspas simples
                 } elseif (str_starts_with($value, '"') && str_ends_with($value, '"')) {

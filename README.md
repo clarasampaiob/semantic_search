@@ -334,7 +334,7 @@ OBSERVAÇÃO: O arquivo com o helpdeskID do qual você está fazendo a requisiç
 A execução do código da API será interrompida nos seguintes casos:
 * Se qualquer variavel em config.php não tiver o tipo esperado
 * Se não houver arquivo .env
-* Se o conteúdo de .env estiver incorreto 
+* Se o conteúdo de .env for inválido 
 * Se a requisição não for POST
 * Se o conteúdo recebido não for JSON
 * Se o JSON não contiver os dados helpdeskId, projectName e messages
@@ -344,7 +344,7 @@ A execução do código da API será interrompida nos seguintes casos:
 
 ## Mapeamento de Código
 
-A classe Master conta com os seguintes métodos:
+**A classe Master conta com os seguintes métodos**:
 
 * **askToClarify**: Responsável por criar e editar os arquivos .json temporários quando o GPT pedir esclarecimentos para o usuário. A função recebe a frase do GPT e compara com a frase esperada para tal caso, se forem idênticas, o valor de increment é aumentado e salvo no respectivo arquivo.
 
@@ -400,3 +400,53 @@ string $hours // HOrário em formato de string. Ex: "13:25:10"
 ```
 
 * **loadEnv**: Carrega as variáveis de ambiente para o código. O conteúdo que ficará em cada chave do arquivo .env é verificado e validado, e caso seja inválido, a execução da API é interrompida uma vez que não será possível acessar as APIs da openai e da azure. O arquivo .env deve estar na pasta raiz do projeto.
+
+**Fluxo do controller Completions**:
+
+Primeiramente, o código irá validar o conteúdo essencial e aplicar as restrições ou interromper a execução se for o caso. Após isso, basicamente será feito o processamento dos dados recebidos do cliente (via postman ou navegador) e estes serão enviados para a API da openai para obter o conteúdo embbeding.
+
+```php
+$openaiData = [
+  'model' => 'text-embedding-3-large',
+  'input' => $prompt // pergunta do usuário
+];
+```
+
+Após obter o conteudo embedding, este será enviado a API da azure para obter o contexto relacionado a pergunta do usuário
+
+```php
+$azureData = [
+  'count' => true,
+  'select' => 'content, type',
+  'top' => 10,
+  'filter' => "projectName eq 'tesla_motors'",
+  'vectorQueries' => [
+    (object)[
+      'vector' => $embedding,
+      'k' => $amount,
+      'fields' => 'embeddings',
+      'kind' => 'vector'
+    ]
+  ]
+];
+```
+
+O conteúdo obtido será adicionado ao contexto que deve ser enviado ao GPT pela api da openai
+
+```php
+$gptData = [
+  "model" => "gpt-4o",
+  "messages" => [
+    [
+      "role" => "system",
+      "content" => $context
+    ],
+    [
+      "role" => "user",
+      "content" => $prompt
+    ]
+  ]
+];
+```
+
+O resultado obtido será processado de acordo com o model escolhido e será enviado ao usuário como resposta.
