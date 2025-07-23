@@ -24,7 +24,7 @@ $model = "clarification";
 // $model = "handover";
 
 // @type int - Numero de frases para trazer da azure API e contextualizar o GPT
-$amount = 10;
+$amount = 13;
 
 // @type string - Frase que o GPT vai usar para pedir esclarecimento
 $phrase = "Could you please clarify your question? I need a bit more detail to help you better.";
