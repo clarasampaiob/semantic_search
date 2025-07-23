@@ -4,12 +4,12 @@ Esse é um projeto de uma API que retorna respostas de chatbot baseada em um con
 
 No modo clarification, o GPT deve direcionar o usuário para o atendimento humano caso ele tenha pedido esclarecimentos ao usuário mais de 2 vezes. No modo handover, isso acontecerá se a pergunta do usuário estiver relacionada ao contexto classificado como N2, o qual exige que um agente especializado responda ao invés do GPT.
 
-O script vem por padrão configurado para o modo clarification, mas pode ser alterado para o modo handover. Para isso, basta acessar o arquivo config.php e alterar a flag $model para handover.
+O projeto vem por padrão configurado para o modo clarification, mas pode ser alterado para o modo handover. Para isso, basta acessar o arquivo config.php e alterar a flag $model para handover.
 
 
 ## Especificações
 
-A API foi desenvolvida em PHP e não contém nenhum outro framework para backend. O script também conta com uma página web onde é possível simular a visualização do cliente do chat. A página web foi desenvlvida em HTML, CSS, JavaScript e Bootstrap.
+A API foi desenvolvida em PHP e não contém nenhum outro framework para backend. O projeto também conta com uma página web onde é possível simular a visualização do cliente do chat. A página web foi desenvlvida em HTML, CSS, JavaScript e Bootstrap.
 
 
 ## Instalação
