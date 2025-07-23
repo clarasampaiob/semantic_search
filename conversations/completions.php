@@ -7,6 +7,25 @@ require_once "../config.php";
 require_once "master.php";
 $master = new Master($phrase, $transferPhrase, $folder);
 
+// Verifica se os dados fornecidos em config.php possuem o tipo correto
+$v[] = $master->validateType("string", $targetTime, 'invalid');
+$v[] = $master->validateType("string", $folder, 'invalid');
+$v[] = $master->validateType("string", $fileDuration, 'invalid');
+$v[] = $master->validateType("string", $model, 'invalid');
+$v[] = $master->validateType("string", $phrase, 'invalid');
+$v[] = $master->validateType("string", $transferPhrase, 'invalid');
+$v[] = $master->validateType("string", $answer, 'invalid');
+$v[] = $master->validateType("int", $amount, 'invalid');
+$v[] = $master->validateType("bool", $setScheduler, 'invalid');
+$v[] = $master->validateType("bool", $_SESSION['humanAgent'], 'invalid');
+
+// Verifica se algum dos dados anteriores recebeu invalid / Erro: Erro no Servidor (500)
+if (in_array('invalid', $v, true)) {
+  http_response_code(500);
+  echo json_encode(['error' => 'Invalid config content']);
+  exit;
+}
+
 // Carrega as chaves e URLs das APIs / Erro: Erro no Servidor (500)
 try {
   $master->loadEnv();

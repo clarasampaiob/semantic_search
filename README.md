@@ -332,6 +332,7 @@ OBSERVAÇÃO: O arquivo com o helpdeskID do qual você está fazendo a requisiç
 ## Restrições
 
 A execução do código da API será interrompida nos seguintes casos:
+* Se qualquer variavel em config.php não tiver o tipo esperado
 * Se não houver arquivo .env
 * Se o conteúdo de .env estiver incorreto 
 * Se a requisição não for POST

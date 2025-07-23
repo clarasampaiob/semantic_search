@@ -119,6 +119,9 @@ class Master {
 
     public function validateType(string $expected, mixed $value, mixed $fall){
         if ($expected === "string") return (!is_string($value) || empty(trim($value))) ? $fall : $value;
+        if ($expected === "int") return (!is_int($value)) ? $fall : $value;
+        if ($expected === "bool") return (!is_bool($value)) ? $fall : $value;
+        return $fall;
     }
 
 }

@@ -4,20 +4,20 @@
 // Fuso Horário
 date_default_timezone_set('America/Sao_Paulo');
 
-// @type string - Horário para executar a limpeza de pasta
-$targetTime = '10:04:00';
-
-// @type bool - Use true para ativar o agendamento
-$setScheduler = true;
-
 // @type bool - Sessão para controlar a transferência para atendimento humano
 $_SESSION['humanAgent'] = false;
 
-// @type string - Nome da pasta para arquivos temporários
-$folder = 'temps';
+// @type bool - Use true para ativar o agendamento
+$setScheduler = false;
+
+// @type string - Horário para executar a limpeza de pasta
+$targetTime = '23:40:00';
 
 // @type string - Tempo de duração dos arquivos temporários
-$fileDuration = '+2 minutes';
+$fileDuration = '+3 minutes';
+
+// @type string - Nome da pasta para arquivos temporários
+$folder = 'temps';
 
 // @type string - Modelo para as respostas da IA - Opções: "clarification" ou "handover"
 $model = "clarification";
