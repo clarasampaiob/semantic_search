@@ -14,6 +14,8 @@ class Master {
     public function askToClarify(string $gptResponse, string $helpdeskId, string $duration){
         $filePath = $this->folder . '/' . $helpdeskId . '.json';
         if($gptResponse === $this->clarifyPhrase){
+            $increment = 1;
+            $expirationDate = date('Y-m-d H:i:s', strtotime($duration));
             if (file_exists($filePath)) {
                 $fileData = json_decode(file_get_contents($filePath), true);
                 if ($fileData !== null && json_last_error() === JSON_ERROR_NONE) {
@@ -22,10 +24,7 @@ class Master {
                         $expirationDate = $fileData['expiration_date'];
                     }
                 }
-            } else {
-                $increment = 1;
-                $expirationDate = date('Y-m-d H:i:s', strtotime($duration));
-            }
+            } 
             file_put_contents($filePath, json_encode(['increment' => $increment, 'expiration_date' => $expirationDate]));
             return $increment > 2;
         }
