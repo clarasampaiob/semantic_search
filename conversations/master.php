@@ -76,10 +76,6 @@ class Master {
             if (count($parts) === 2) {
                 $key = trim($parts[0]);
                 $value = trim($parts[1]);
-                $key = $this->validateType("string", $key, false);
-                $value = $this->validateType("string", $value, false);
-                if ($key === false) throw new RuntimeException("env files can not contain empty keys");
-                if ($value === false) throw new RuntimeException("env files can not contain empty values");
                 if (!in_array($key, $allowedKeys, true)) throw new RuntimeException("Invalid key found in env file");
                 if (str_starts_with($value, "'") && str_ends_with($value, "'")) {
                     $value = substr($value, 1, -1); // Remove aspas simples
@@ -87,13 +83,14 @@ class Master {
                     $value = substr($value, 1, -1); // Remove aspas duplas
                     $value = str_replace(['\\"', '\\\'', '\\\\'], ['"', "'", '\\'], $value); // lida com caracteres escape
                 }
+                $value = $this->validateType("string", $value, false);
+                if ($value === false) throw new RuntimeException("env files can not contain empty values");
                 $_ENV[$key] = $value;
                 putenv("$key=$value");
-            } else {
-                throw new RuntimeException("env file has incorrect format");
             }
         }
     }
+        
 
     public function clearFolder(string $helpdeskId){
         if (!is_dir($this->folder)) mkdir($this->folder, 0755, true); // Cria a pasta se não existir
